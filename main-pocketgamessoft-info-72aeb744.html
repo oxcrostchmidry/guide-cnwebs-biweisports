@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.2, user-scalable=yes">
+    <title>日常查询与对照 · pg模拟器</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #f4f9fc;
+            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+            color: #1e2f3a;
+            line-height: 1.6;
+            padding: 1.2rem 1rem 2.8rem;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .page {
+            max-width: 960px;
+            margin: 0 auto;
+            width: 100%;
+            flex: 1;
+        }
+
+        /* 蓝绿点缀色协调过渡 */
+        h1, h2, h3 {
+            font-weight: 500;
+            letter-spacing: 0.01em;
+        }
+
+        h2 {
+            font-size: 1.5rem;
+            margin-bottom: 1.2rem;
+            color: #1f5b5c;
+            border-left: 5px solid #2e9e9b;
+            padding-left: 0.75rem;
+        }
+
+        /* 主视觉 hero 卡片 */
+        .hero-card {
+            background: linear-gradient(145deg, #e9f6f5 0%, #d6eae8 100%);
+            border-radius: 32px;
+            padding: 2.2rem 1.8rem;
+            margin-bottom: 2.5rem;
+            box-shadow: 0 6px 18px rgba(46, 130, 125, 0.08);
+            border: 1px solid rgba(46, 158, 155, 0.15);
+            transition: transform 0.2s ease;
+        }
+
+        .hero-card h1 {
+            font-size: 2.2rem;
+            font-weight: 450;
+            color: #145352;
+            margin-bottom: 0.8rem;
+            line-height: 1.2;
+        }
+
+        .hero-card .sub {
+            font-size: 1.1rem;
+            color: #2b5f5e;
+            max-width: 600px;
+            margin-bottom: 0.5rem;
+        }
+
+        .hero-card .meta-note {
+            font-size: 0.95rem;
+            color: #3c6f6d;
+            background: rgba(255, 255, 255, 0.5);
+            display: inline-block;
+            padding: 0.2rem 1rem 0.2rem 1.2rem;
+            border-radius: 40px;
+            backdrop-filter: blur(2px);
+            margin-top: 0.3rem;
+        }
+
+        /* 网格卡片区 */
+        .grid-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2.5rem;
+        }
+
+        .card {
+            background: white;
+            border-radius: 24px;
+            padding: 1.7rem 1.4rem 1.6rem;
+            box-shadow: 0 4px 12px rgba(0, 40, 40, 0.05);
+            border: 1px solid #deedec;
+            transition: box-shadow 0.15s, transform 0.1s;
+        }
+
+        .card:hover {
+            box-shadow: 0 10px 22px rgba(46, 130, 125, 0.08);
+            transform: translateY(-2px);
+        }
+
+        .card h3 {
+            font-size: 1.2rem;
+            margin-bottom: 0.7rem;
+            color: #13615f;
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        .card p {
+            font-size: 0.98rem;
+            color: #2a4145;
+        }
+
+        .card .badge {
+            display: inline-block;
+            background: #d5efed;
+            color: #145a58;
+            padding: 0.15rem 0.7rem;
+            border-radius: 30px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            margin-left: 0.4rem;
+        }
+
+        /* 适合人群组合卡片 */
+        .audience-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1.2rem;
+            margin: 1.8rem 0 2.2rem;
+        }
+
+        .audience-item {
+            background: #eef6f5;
+            border-radius: 60px 16px 16px 60px;
+            padding: 0.9rem 1.2rem 0.9rem 1.8rem;
+            border-left: 4px solid #2e9e9b;
+            font-weight: 450;
+            color: #144d4b;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .audience-item::before {
+            content: "·";
+            font-size: 2rem;
+            color: #2e9e9b;
+            line-height: 1;
+            margin-right: 0.2rem;
+        }
+
+        /* 自然链接段落区 */
+        .link-paragraph {
+            background: #ffffffd9;
+            backdrop-filter: blur(2px);
+            border-radius: 28px;
+            padding: 1.8rem 2rem;
+            margin: 1.5rem 0 2rem;
+            border: 1px solid #c9e2df;
+            box-shadow: 0 2px 8px rgba(46, 130, 125, 0.03);
+        }
+
+        .link-paragraph p {
+            margin-bottom: 1rem;
+            font-size: 1rem;
+        }
+
+        .link-paragraph p:last-child {
+            margin-bottom: 0;
+        }
+
+        .highlight-link {
+            color: #1b7a77;
+            text-decoration: none;
+            font-weight: 500;
+            border-bottom: 1.5px dotted #7dc2be;
+            transition: border-color 0.2s;
+        }
+
+        .highlight-link:hover {
+            border-bottom-color: #145352;
+            color: #0d4f4d;
+        }
+
+        /* FAQ 摘要样式 – 轻量折叠摘要 */
+        .faq-mini {
+            background: #e3f2f0;
+            border-radius: 24px;
+            padding: 1.5rem 1.8rem;
+            margin: 2rem 0 1.2rem;
+        }
+
+        .faq-mini details {
+            margin-bottom: 0.6rem;
+            border-bottom: 1px solid #bdd9d6;
+            padding-bottom: 0.4rem;
+        }
+
+        .faq-mini details:last-of-type {
+            border-bottom: none;
+            margin-bottom: 0;
+        }
+
+        .faq-mini summary {
+            font-weight: 450;
+            cursor: pointer;
+            color: #1a5f5c;
+            padding: 0.35rem 0;
+            list-style: none;
+            display: flex;
+            align-items: center;
+        }
+
+        .faq-mini summary::before {
+            content: "▹";
+            color: #2e9e9b;
+            font-size: 1.1rem;
+            margin-right: 0.6rem;
+        }
+
+        .faq-mini details[open] summary::before {
+            content: "▿";
+        }
+
+        .faq-mini .answer {
+            color: #254e4b;
+            padding: 0.2rem 0 0.5rem 1.5rem;
+            font-size: 0.95rem;
+        }
+
+        /* 提示小条 */
+        .hint-strip {
+            background: #d2eae7;
+            border-radius: 60px;
+            display: inline-block;
+            padding: 0.3rem 1.2rem 0.3rem 1.5rem;
+            font-size: 0.9rem;
+            color: #115553;
+            margin: 0.2rem 0 1rem;
+            border: 1px solid #b2d5d1;
+        }
+
+        hr.divider {
+            border: none;
+            border-top: 1px solid #cfe3e0;
+            margin: 1.5rem 0;
+        }
+
+        .footer-note {
+            text-align: center;
+            font-size: 0.85rem;
+            color: #4f7875;
+            margin-top: 2rem;
+            opacity: 0.75;
+        }
+
+        /* 响应式细节 */
+        @media (max-width: 520px) {
+            body {
+                padding: 0.8rem 0.6rem 2rem;
+            }
+            .hero-card {
+                padding: 1.6rem 1.2rem;
+            }
+            .hero-card h1 {
+                font-size: 1.8rem;
+            }
+            .card {
+                padding: 1.3rem 1rem;
+            }
+            .audience-item {
+                border-radius: 30px 12px 12px 30px;
+                padding: 0.7rem 1rem 0.7rem 1.2rem;
+                font-size: 0.95rem;
+            }
+            .link-paragraph {
+                padding: 1.3rem 1.2rem;
+            }
+            .faq-mini {
+                padding: 1rem 1.2rem;
+            }
+        }
+
+        @media (min-width: 768px) {
+            .hero-card {
+                padding: 3rem 2.8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="page">
+
+    <!-- 主视觉卡片 -->
+    <div class="hero-card">
+        <h1>日常查询 · 对照参考</h1>
+        <div class="sub">不带预设地翻阅、比照，在浏览中渐渐熟悉。</div>
+        <div class="meta-note">适度的延伸阅读，比一次性的了解更有余裕</div>
+    </div>
+
+    <!-- 用途卡片 (网格) -->
+    <h2>可以怎么翻阅</h2>
+    <div class="grid-cards">
+        <div class="card">
+            <h3>📋 功能速览</h3>
+            <p>想快速知道某个模块能做什么、不能做什么。卡片式归纳，不用从头翻到尾。</p>
+            <span class="badge">查询友好</span>
+        </div>
+        <div class="card">
+            <h3>🔍 对照参考</h3>
+            <p>同时打开几个页面并列比较，适合参数、版本或选项之间的差异确认。</p>
+        </div>
+        <div class="card">
+            <h3>📎 延伸阅读</h3>
+            <p>从一条说明顺藤摸瓜读到相关条目，满足偶然的好奇心。</p>
+        </div>
+        <div class="card">
+            <h3>🧩 日常积累</h3>
+            <p>不必刻意记忆，隔段时间再看，自然形成自己的使用脉络。</p>
+        </div>
+    </div>
+
+    <!-- 适合人群 (组合卡片) -->
+    <h2>顺手翻翻的人群</h2>
+    <div class="audience-grid">
+        <div class="audience-item">习惯先看说明再尝试的人</div>
+        <div class="audience-item">需要快速回溯设定的人</div>
+        <div class="audience-item">喜欢轻量对照的浏览者</div>
+        <div class="audience-item">偶尔想延伸了解关联功能</div>
+    </div>
+
+    <!-- 自然链接段落 (嵌入pg模拟器) -->
+    <div class="link-paragraph">
+        <p>日常查询时，很多人会同时打开参考页与目标界面，左右对照着看。如果你的工作流里也需要一款随时可翻阅的工具页，可以试着把 <a href="https://main-pocketgamessoft.com" class="highlight-link">pg模拟器</a> 加入书签夹，当作一个安静的参考侧栏。</p>
+        <p>它不追求一次性灌输，更接近一本可以随手翻开、看完就合上的小册子。没有催促，也没有强制路径，只是把功能拆解成一个个可以独立阅读的片段。</p>
+        <p>遇到不熟悉的模块，不妨先在这里瞄一眼概述，再回到实际操作中验证。很多细节就是在这样一查一对比之间逐渐清晰的。</p>
+    </div>
+
+    <!-- 提示小条  -->
+    <div class="hint-strip">💡 小建议：从你最常用的部分开始读，不必从头</div>
+
+    <!-- FAQ 摘要 (轻量折叠摘要) -->
+    <div class="faq-mini">
+        <details>
+            <summary>页面里的卡片信息会频繁更新吗？</summary>
+            <div class="answer">通常随功能调整而更新，不设定固定周期。卡片内容以稳定、准确为前提，避免频繁变动造成混淆。</div>
+        </details>
+        <details>
+            <summary>可以把链接分享给朋友参考吗？</summary>
+            <div class="answer">当然可以。直接转发当前页面地址即可，对方打开看到的内容与你一致。</div>
+        </details>
+        <details>
+            <summary>这些介绍和官方文档的关系是？</summary>
+            <div class="answer">可以看作一种更简练的版本，摘取了常用部分，但完整细节仍以实际页面为准。</div>
+        </details>
+    </div>
+
+    <hr class="divider">
+
+    <div class="footer-note">
+        — 随翻随合，不占内存 —
+    </div>
+
+</div>
+</body>
+</html>
